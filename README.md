@@ -5,3 +5,5 @@
 - El codigo de cada consigna debe ser escrito en el archivo app.s
 - El archivo main.s contiene la inicializacion del FrameBuffer y la llamada a app.s (NO EDITAR) 
 - El codigo de ejemplo pinta toda la pantalla de color ROJO puro.
+- dashboard memory watch 0x40080100 256
+
