@@ -4,7 +4,7 @@ app:
 	
 	//---------------- CODE HERE ------------------------------------
 	
-	mov w10, 0x07E0    // 0xF800 = RED
+	mov w10, 0x07E0    // 0x07E8 = GREEN
 	mov x2,512         // Y Size 
 loop1:
 	mov x1,512         // X Size
@@ -17,7 +17,7 @@ loop0:
 	sub x2,x2,1	   // Decrement Y counter
 	cmp x2, 256
 	B.NE cont
-	mov w10, 0x001F	
+	mov w10, 0x001F	   // BLUE
 cont:	
 	cbnz x2,loop1	   // if not last row, jump
 

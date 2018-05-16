@@ -10,9 +10,12 @@ if [ "$1" == "-p" ]; then
 fi
 sed -i "s/$OLD/$NEW/" Makefile
 
+
 make clean
 make
 
-qemu-system-aarch64 -s -S -machine virt -cpu cortex-a53 -machine type=virt -nographic -smp 1 -m 64 -kernel kernel8.img &
-aarch64-linux-gnu-gdb -x .gdbconfig
-killall qemu-system-aarch64
+if [ "$1" != "-p" ]; then
+  qemu-system-aarch64 -s -S -machine virt -cpu cortex-a53 -machine type=virt -nographic -smp 1 -m 64 -kernel kernel8.img &
+  aarch64-linux-gnu-gdb -x .gdbconfig
+  killall qemu-system-aarch64
+fi
