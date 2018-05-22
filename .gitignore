@@ -1,0 +1,11 @@
+*
+
+!.gitignore
+!app.s
+!main.s
+!mainqemu.s
+!Makefile
+!memmap
+!README.md
+!run
+!.gdbconfig
