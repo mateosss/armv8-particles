@@ -1,129 +1,101 @@
 .globl app
 app:
-	// X0 contiene la direccion base del framebuffer
-    // X1 x. col
-    // X2 y. rows
-    // w10 color
-    // x3 amount of pixels to paint for the paint function
+//---------------- CODE HERE ------------------------------------
 
+/* colores= [rojo, verde, azul]
+direccion = 1
+moviendo = *verde
 
+*moviendo += direccion
+if dir es 1 y contadorDeMovimiento == 32 || dir es  -1 y contadorDeMovimiento es 0
+	moviendo = (moviendo - 1) mod colores.length
+	dir *= -1
+}
+else repetir */
 
-	//---------------- CODE HERE ------------------------------------
-  mov x3, 2
-	mov x2,512         // Y Size
-  mov x4, 1 // Sections of the loop
+mov x1, 0
 
+// Reserve memory for saving color values before rendering
+sub SP, SP, 24 // Reserves 3 slots from stack pointer
+str XZR, [SP, 0]
+str XZR, [SP, 8]
+str XZR, [SP, 16]
 
-ymov:
-    mov w10, 0xF800    // 0xF800 = red
-    sub x2,x2,1
-    mov x1,0         // X Size
-    mov x4, 1
+// Sets full red
+mov x9, 0
+str x9, [SP, 0]
 
-    cbz x2, InfLoop
-    b f0_t63
+// Point x9 to the `increasing` color address, green at first
+add x9, SP, 8
 
-f0_t63:
-    bl paint
-    /*if x4==1{
-      cmp x1, 64
-    } elif x4==0 {
-    }
-      cmp x1, 448 //384 + 64
-    b.EQ f64_t127*/
+// Sets direction (x10) and chunk_counter (x11)
+mov x10, 1
+mov x11, 0
 
-    cmp x4, 1
-    b.NE else
-    cmp x1, 64
-    b done
-    else:
-      cmp x1, 448
-    done:
-    b.EQ f64_t127
+bl paint
 
-    add w10, w10, 0x40 //sube verde
-    b f0_t63
+// (dir == 1 && chunk_counter < 32) || (x10 == -1 && x11 >= 0)
+while1_start:
+	cmp x10, xzr
+	b.LE or
+	cmp x11, 32
+	b.LT while1_true
+	or:
+	cmp x10, xzr
+	b.GT while1_false
+	cmp x11, xzr
+	b.GE while1_true
+	b while1_false
 
-f64_t127:
-    bl paint
-    /* if  x4 == 1 {
-      cmp x1, 128
-      b.EQ f128_191
-    } else {
-      cmp x1, 512
-      b.EQ ymov
-    } */
-    cmp x4, 1
-    b.NE else1
-      cmp x1, 128
-      b.EQ f128_191
-      b done1
-    else1:
-      cmp x1, 512
-      b.EQ ymov
-    done1:
-    sub w10, w10, 0x800 //baja rojo
-    b f64_t127
+	while1_true:
+		// *moving += direction
+		ldr x12, [x9]
+		add x12, x12, x10
+		str x12, [x9]
 
-f128_191:
-    bl paint
-    cmp x1, 192
-    b.EQ f192_t255
-    add w10, w10, 1 //sube azul
-    b f128_191
+		// paint
+		bl paint
 
-f192_t255:
-    bl paint
-    cmp x1, 256
-    b.EQ f256_t319
-    sub w10, w10, 0x40 //baja verde
-    b f192_t255
+		// chunk_counter += direction
+		add x11, x11, x10
 
-f256_t319:
-    bl paint
-    cmp x1, 320
-    b.EQ f320_t383
-    add w10, w10, 0x800 //sube rojo
-    b f256_t319
+		b while1_end
 
-f320_t383:
-    bl paint
-    cmp x1, 384
+	while1_false:
+		// direction *= -1
+		sub x10, xzr, x10
 
-    /*b.EQ f384_512
-    if x1==384 {
-      x4--q
-      b f0_t63
-    }*/
-    cmp x1, 384
-    b.NE else2
-      sub x4, x4, 1
-      b f0_t63
-    else2:
-      sub w10, w10, 1 //baja azul
-      b f320_t383
+		// x9 = (x9 - 1) mod 3
+		sub x9, x9, 8
+		cmp x9, FP
+		b.GE while1_end
+		add x12, FP, 16
+		mov x9, x12
 
-f384_512:
-    mov w10, 0x0
-    bl paint
-    cmp x1, 512
-    b.EQ ymov
-    b f384_512
+while1_end:
+
 
 paint:
-  	sturh w10,[x0]	   // Set color of pixel N
-  	add x0,x0,2	   	   // Next pixel
-  	add x1,x1,1	       // decrement X counter
-    sub x3, x3, 1 // Decrement x3 paint counter
-    cbnz x3, paint
-    mov x3, 2
-    ret
+	mov x12, 1
+	lsl x12, x12, 18
+	cmp x1, x12
+	b.EQ InfLoop
 
 
+	// Compose color value
+	ldr w12, [x9, 0]
+	ldr w13, [x9, 8]
+	ldr w14, [x9, 16]
+	add w14, w14, w13, LSL 5
+	add w14, w14, w12, LSL 11
 
+	// Draw pixel
+	strh w14, [x0]
+	add x0, x0, 2
 
+	add x1, x1, 1
 
-
+	ret
 
 //---------------------------------------------------------------
 
