@@ -10,3 +10,4 @@ SECTIONS
     .bss : { *(.bss*) } > ram
 }
 
+_stack_end = 0x400C0000;        /* STACK at RAM end */
