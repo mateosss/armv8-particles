@@ -1,5 +1,9 @@
 .globl app
 app:
+mov sp, #0x8000
+ldr x9, dirBase // Sets dirbase thing
+add x9, sp, x9
+mov sp, x9
 //---------------- CODE HERE ------------------------------------
 
 /*
@@ -22,25 +26,29 @@ while (screen not entirely painted) {
 
 */
 
-mov x1, 0 // TODO: Dummy counter for testing, delete when done
+ldr x1, =colors // x1 will be de location of the colors array, sets dirBase offset for qemu
+ldr x9, dirBase
+add x1, x1, x9
 
-// Reserve memory for saving color values before rendering
-sub SP, SP, 24 // Reserves 3 slots from stack pointer
 
 initialize_row:
+  mov x2, 0 // Column counter, reset row on x2 == 512
 
   // Sets full red as starting color
   mov x9, 0x1F
-  str x9, [SP, 16]
-  str XZR, [SP, 8]
-  str XZR, [SP, 0]
+  stur x9, [x1, 0]
+  stur XZR, [x1, 8]
+  stur XZR, [x1, 16]
 
   // Point x9 to the `moving` color address, green at first
-  add x9, SP, 8
+  add x9, x1, 8
 
   // Sets direction (x10) and chunk_counter (x11)
   mov x10, 1
   mov x11, 0
+
+  /* cbz x30, while1_start // First execution of initialize_row
+  ret */
 
 // (x10 == 1 && x11 < 31) || (x10 == -1 && x11 > 0)
 while1_start:
@@ -74,25 +82,19 @@ while1_start:
 		sub x10, xzr, x10
 
 		// x9 = (x9 - 1) mod 3 // Ir al color anterior g -> r -> b -> g -> ...
-		add x9, x9, 8
-		cmp x9, x29 // x9 > FP
-		b.LT while1_start
-		mov x9, SP // x9 = blue
+		sub x9, x9, 8 // x9--
+    cmp x9, x1 // x9 < &colors
+		b.GE while1_start
+		add x9, x1, 16 // x9 = blue
     b while1_start
 
 while1_end: // TODO: Ver cuando terminar
 
-
 paint:
-	mov x12, 1 // TODO: This block is related to the x1 counter, should be gone when done
-	lsl x12, x12, 18
-	cmp x1, x12
-	b.EQ InfLoop
-
 	// Compose color value
-	ldr w12, [x9, 16]
-	ldr w13, [x9, 8]
-	ldr w14, [x9, 0]
+	ldur w12, [x1, 0]
+	ldur w13, [x1, 8]
+	ldur w14, [x1, 16]
 	add w14, w14, w13, LSL 6
 	add w14, w14, w12, LSL 11
 
@@ -100,9 +102,18 @@ paint:
 	strh w14, [x0]
 	add x0, x0, 2
 
-	add x1, x1, 1 // TODO: Related to x1 at start of file remove when done
+	add x2, x2, 1 // TODO: Related to x2 at start of file remove when done
 
-	ret
+  cmp x2, 2048
+  b.EQ InfLoop
+  /* cmp x2, 512 // Last column? then initialize_row
+  b.LT paint_return
+  b initialize_row*/
+  /*str x30, [sp, #-8]! // Save return address in stack
+  bl initialize_row
+  ldr x30, [sp],8*/
+
+	paint_return: ret
 
 //---------------------------------------------------------------
 
