@@ -30,9 +30,12 @@ ldr x1, =colors // x1 will be de location of the colors array, sets dirBase offs
 ldr x9, dirBase
 add x1, x1, x9
 
+mov x2, xzr // Row counter
+mov x3, xzr // Column counter
 
 initialize_row:
-  mov x2, 0 // Column counter, reset row on x2 == 512
+  add x2, x2, 1 // Add 1 to row
+  mov x3, 0 // Column counter, reset row on x3 == 512
 
   // Sets full red as starting color
   mov x9, 0x1F
@@ -47,8 +50,6 @@ initialize_row:
   mov x10, 1
   mov x11, 0
 
-  /* cbz x30, while1_start // First execution of initialize_row
-  ret */
 
 // (x10 == 1 && x11 < 31) || (x10 == -1 && x11 > 0)
 while1_start:
@@ -88,7 +89,7 @@ while1_start:
 		add x9, x1, 16 // x9 = blue
     b while1_start
 
-while1_end: // TODO: Ver cuando terminar
+while1_end:
 
 paint:
 	// Compose color value
@@ -102,19 +103,18 @@ paint:
 	strh w14, [x0]
 	add x0, x0, 2
 
-	add x2, x2, 1 // TODO: Related to x2 at start of file remove when done
+	add x3, x3, 1 // Add 1 to column counter
 
-  cmp x2, 2048
+  cmp x2, 512 // Is last row?
   b.EQ InfLoop
-  /* cmp x2, 512 // Last column? then initialize_row
-  b.LT paint_return
-  b initialize_row*/
-  /*str x30, [sp, #-8]! // Save return address in stack
-  bl initialize_row
-  ldr x30, [sp],8*/
+
+  cmp x3, 512 // Is last column?
+  b.EQ initialize_row
 
 	paint_return: ret
 
+
+compose:
 //---------------------------------------------------------------
 
 // Infinite Loop
