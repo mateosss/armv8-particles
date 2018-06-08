@@ -1,3 +1,7 @@
+	.data
+	colors: .dword 0x1F, 0, 0 // Initial r, g, b
+	dirBase: .dword 0 // Initial r, g, b
+
 	.text
 	.org 0x0000
 
@@ -37,11 +41,11 @@ FB_Init:
 	and w0,w0,0x3FFFFFFF // Convert Mail Box Frame Buffer Pointer From BUS Address To Physical Address ($CXXXXXXX -> $3XXXXXXX)
 	str w0,[x2] // Store Frame Buffer Pointer Physical Address
 
-	// Core 0 branch to app	
-	b app	
+	// Core 0 branch to app
+	b app
 
-	// Infinite Loop For Core 1, 2 and 3	
-CoreLoop: 
+	// Infinite Loop For Core 1, 2 and 3
+CoreLoop:
 	b CoreLoop
 
 .align 16
@@ -92,4 +96,3 @@ FB_POINTER:
 
 	.word 0x00000000 // $0 (End Tag)
 FB_STRUCT_END:
-
