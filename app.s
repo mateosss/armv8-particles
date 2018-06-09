@@ -92,12 +92,12 @@ while1_start:
 while1_end:
 
 paint:
-	// Compose color value
-	ldur w12, [x1, 0]
-	ldur w13, [x1, 8]
-	ldur w14, [x1, 16]
-	add w14, w14, w13, LSL 6
-	add w14, w14, w12, LSL 11
+
+  stp x30, xzr, [sp, #-16]!        // Store Register x1 and x0 in stack
+  /* REVIEW: For some reason this doesn't work ldr x30, [sp],8 str x30, [sp, #-8]! */
+  bl compose
+  /* REVIEW: For some reason this doesn't work ldr x30, [sp],8 */
+  ldp x30, xzr, [sp],16            // Restore x1 and x0 from stack
 
 	// Draw pixel
 	strh w14, [x0]
@@ -115,6 +115,13 @@ paint:
 
 
 compose:
+  // Compose color value to w14
+  ldur w12, [x1, 0]
+  ldur w13, [x1, 8]
+  ldur w14, [x1, 16]
+  add w14, w14, w13, LSL 6
+  add w14, w14, w12, LSL 11
+  ret
 //---------------------------------------------------------------
 
 // Infinite Loop
