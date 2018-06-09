@@ -10,6 +10,7 @@ mov sp, x9
 
 
 // Paint background
+/*
 mov w10, 0x2105    // GRIS
 mov x2,512         // Y Size
 loop1:
@@ -21,6 +22,8 @@ loop0:
   cbnz x1,loop0	   // If not end row jump
   sub x2,x2,1	   // Decrement Y counter
   cbnz x2,loop1	   // if not last row, jump
+*/
+
 /*
 
 TODO: Pseudocode here
@@ -36,6 +39,7 @@ paint x,y,r,g,b
   - x0: Last painted pixel memory address
   - x1: Last painted pixel column
   - x2: Last painted pixel row
+  - x8: Base address of selected particle
   - x9: Argument X of draw_pixel
   - x10: Argument Y of draw_pixel
   - x11: Argument COLOR of draw_pixel
@@ -47,10 +51,8 @@ mov x0, x29 // Reset x0
 mov x1, 0 // Current screen column x
 mov x2, 0 // Current screen row y
 
-mov x9, 256 // x
-mov x10, 256 // y
-mov w11, 0xF81F // rgb
 
+bl load_particle
 update:
   bl draw_pixel
   add x9, x9, 1
@@ -61,6 +63,17 @@ update:
 
 
 b InfLoop
+
+load_particle:
+  // Point x8 to particle1
+  ldr x8, =particle1
+  ldr x7, dirBase // Sets dirbase thing
+  add x8, x8, x7
+
+  ldr x9, [x8, #0] // x
+  ldr x10, [x8, #8] // y
+  ldr x11, [x8, #32] // color
+  ret
 
 draw_pixel:
   // Draws the x9, x10 pixel of x11 color
