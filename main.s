@@ -1,4 +1,5 @@
 	.data
+	// Qemu specific modifications
 	QEMU_BASE_ADDRESS: .dword 0x0
 	UPDATE_DELTA: .dword 65536
 
@@ -9,7 +10,7 @@
 	  //									 0     8     16    24    32        40        48     56
 	  PARTICLE1: .dword 384, 0, -50, 100, 0, 0, 0x07FF, 40
 	  PARTICLE2: .dword 128, 0, 50, 100, 0, 0, 0xF81F, 40
-	  PARTICLE3: .dword 128, 256, 400, 420, 0, 0, 0xFFE0, 40
+	  PARTICLE3: .dword 128, 128, 400, 1, 0, 0, 0xFFE0, 40
 
 	.text
 	.org 0x0000

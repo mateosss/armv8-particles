@@ -16,6 +16,7 @@ update: for every particle: load_particle -> draw -> recalc -> store -> delay
   - [x] movement temp should be part of particle memory
   - [ ] load particle -> draw -> recalc loop for every particle
   - [ ] clear last position of particle before painting new (erase between load and draw)
+  - [ ] deberia hacer modulo 512 a los argumentos del draw pixel
   - [ ] make lifetime work
   - [ ] if lifetime 0 respawn from origin
   - [ ] make that work with many particles
@@ -74,7 +75,11 @@ paint x,y,r,g,b
   - x0: Last painted pixel memory address
   - x1: Last painted pixel column
   - x2: Last painted pixel row
+
   - x3: loadedParticle base address
+  - x6: current drawn particle index
+  - x7: PARTICLES_AMOUNT
+  - x8: PARTICLE_SIZE
 
   - x19: loadedParticle.posX
   - x20: loadedParticle.posY
@@ -93,22 +98,36 @@ paint x,y,r,g,b
 mov x0, x29
 mov x1, 0
 mov x2, 0
+mov x3, 0
+mov x4, 0
+mov x6, 0
+ldr x7, PARTICLES_AMOUNT
+ldr x8, PARTICLE_SIZE
 mov x19, 0
 mov x20, 0
 mov x25, 0
 mov x23, 0
 mov x24, 0
-mov x3, 0
 
 
-bl load_particle
 update:
-  bl draw_pixel
 
-  bl recalc_x
-  bl recalc_y
+  //for every particle: load -> draw > recalc data -> store
+  mov x6, x7 // x6 = PARTICLES_AMOUNT
+  update_for:
+    cbz x6, update_for_done
+    sub x6, x6, 1
 
-  bl store_particle
+    bl load_particle
+    bl draw_pixel
+
+    bl recalc_x
+    bl recalc_y
+
+    bl store_particle
+
+    b update_for
+  update_for_done:
 
   bl delay
   b update
@@ -117,8 +136,11 @@ update:
 b InfLoop
 
 load_particle:
-  // Point x3 to PARTICLE1
-  ldr x3, =PARTICLE1
+  // Point x3 to PARTICLE1, and save all properties of the property to x19-x26
+  // Expects particle number at x6 and PARTICLE_SIZE at x8
+  ldr x3, =PARTICLES
+  mul x9, x6, x8 // x9 = particle_index * PARTICLE_SIZE
+  add x3, x3, x9, LSL 3 // point x3 to current particle
   ldr x9, QEMU_BASE_ADDRESS
   add x3, x3, x9
 
@@ -134,10 +156,8 @@ load_particle:
   ret
 
 store_particle:
-  // Point x3 to PARTICLE1
-  ldr x3, =PARTICLE1
-  ldr x9, QEMU_BASE_ADDRESS
-  add x3, x3, x9
+  // save x19-x26 to the particle in memory
+  // Expects particle number at x6 and PARTICLE_SIZE at x8
 
   str x19, [x3, #0] // posX
   str x20, [x3, #8] // posY
