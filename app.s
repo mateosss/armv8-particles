@@ -126,6 +126,7 @@ update:
 
     bl recalc_x
     bl recalc_y
+    bl recalc_lifetime
 
     bl draw_pixel
 
@@ -204,7 +205,9 @@ recalc_x:
       dirTemp -= sign(dirTempX) * 100
       draw_pixel_at_x += sign(dirTempX)
     }
+    dirTemp += dir
   */
+  // Position update
   x_recalc_while:
     mov x9, x23
 
@@ -226,11 +229,14 @@ recalc_x:
       b x_recalc_while
     x_recalc_while_done:
 
+    // dirTemp update
     add x23, x23, x21 // Add dirX to dirTempX
     ret
 
 recalc_y:
   /* See recalc_x is the same but for Y */
+
+  // Position update
   y_recalc_while:
     mov x9, x24
 
@@ -252,8 +258,21 @@ recalc_y:
       b y_recalc_while
   y_recalc_while_done:
 
+  // dirTemp update
   add x24, x24, x22 // Add dirY to dirTempY
   ret
+
+recalc_lifetime:
+  /* Substract 1 from lifetime, and if 0 reset, and reset position */
+  // Lifetime update
+  cmp x26, 0
+  b.GT recalc_lifetime_else
+    ldr x19, ORIGIN_X
+    ldr x20, ORIGIN_Y
+    ldr x26, PARTICLE_LIFETIME
+  recalc_lifetime_else:
+    sub x26, x26, 1
+  recalc_lifetime_return: ret
 
 abs:
   // x9 = |x9|
