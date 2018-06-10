@@ -2,6 +2,7 @@
 	// Qemu specific modifications
 	QEMU_BASE_ADDRESS: .dword 0x0
 	UPDATE_DELTA: .dword 65536
+	BACKGROUND_COLOR: .dword 0x2105
 
 	PARTICLES_AMOUNT: .dword 3
 	PARTICLE_SIZE: .dword 8 // Amount of properties of a particle

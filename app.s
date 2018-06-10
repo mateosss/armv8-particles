@@ -14,8 +14,8 @@ update: for every particle: load_particle -> draw -> recalc -> store -> delay
   - [x] set particle speed by percentage
   - [x] set BACKGROUND_COLOR constant
   - [x] movement temp should be part of particle memory
-  - [ ] load particle -> draw -> recalc loop for every particle
-  - [ ] clear last position of particle before painting new (erase between load and draw)
+  - [x] load particle -> draw -> recalc loop for every particle
+  - [x] clear last position of particle before painting new (erase between load and draw)
   - [ ] deberia hacer modulo 512 a los argumentos del draw pixel
   - [ ] make lifetime work
   - [ ] if lifetime 0 respawn from origin
@@ -47,7 +47,8 @@ mov sp, x9
 
 // Paint background
 
-mov w10, 0x2105    // GRIS
+ldr x10, BACKGROUND_COLOR
+cbz x10, start
 mov x2,512         // Y Size
 loop1:
   mov x1,512         // X Size
@@ -93,6 +94,7 @@ paint x,y,r,g,b
   - x29: Backup of memory address of pixel (0,0)
 */
 
+start:
 
 // Reset registers
 mov x0, x29
@@ -119,10 +121,13 @@ update:
     sub x6, x6, 1
 
     bl load_particle
-    bl draw_pixel
+
+    bl clear_pixel
 
     bl recalc_x
     bl recalc_y
+
+    bl draw_pixel
 
     bl store_particle
 
@@ -170,6 +175,13 @@ store_particle:
 
   ret
 
+clear_pixel:
+  // Invokes draw_pixel with BACKGROUND_COLOR color
+  stp x30, x25, [sp, #-16]!
+  ldr x25, BACKGROUND_COLOR
+  bl draw_pixel
+  ldp x30, x25, [sp],16
+  ret
 
 draw_pixel:
   // Draws the x19, x20 pixel of x25 color
