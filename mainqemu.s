@@ -1,13 +1,15 @@
 .data
-colors: .dword 0x1F, 0, 0 // Initial r, g, b
-dirBase: .dword 0x0000000040080000
+QEMU_BASE_ADDRESS: .dword 0x0000000040080000
+UPDATE_DELTA: .dword 1
 
-updateDT: .dword 65536
-particlesAmount: .dword 2
-particles:
-  // particlex: .dword posX, posY, dirX, dirY, color, lifetime // 100% dirX is one pixel per frame
-  particle1: .dword 256, 256, -1, 1, 0xF81F, 100
-  particle2: .dword 128, 384, 1, 1, 0x0AAA, 100
+PARTICLES_AMOUNT: .dword 3
+PARTICLE_SIZE: .dword 8 // Amount of properties of a particle
+PARTICLES:
+  // particlex: .dword posX, posY, dirX, dirY, tempDirX, tempDirY, color, lifetime // 100% dir{X/Y} is one pixel per frame, tempDir{X/Y} is always 0 at start
+  //									 0     8     16    24    32        40        48     56
+  PARTICLE1: .dword 384, 0, -50, 100, 0, 0, 0x07FF, 40
+  PARTICLE2: .dword 128, 0, 50, 100, 0, 0, 0xF81F, 40
+  PARTICLE3: .dword 128, 256, 400, 420, 0, 0, 0xFFE0, 40
 
 .text
 .org 0x0000

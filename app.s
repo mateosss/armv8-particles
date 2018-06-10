@@ -1,16 +1,51 @@
+/*
+Deberia hacer lo mismo que antes (old3)
+
+Added store_particle
+saque la actualizacion de los dirTemps de delay y los pase al loop,
+entonces ahora cuando loopee sobre varias particulas, funcionaria sobre todas
+
+update: for every particle: load_particle -> draw -> recalc -> store -> delay
+
+*/
+
+/* TODO's
+  - [x] rename constants to uppercase
+  - [x] set particle speed by percentage
+  - [x] set BACKGROUND_COLOR constant
+  - [x] movement temp should be part of particle memory
+  - [ ] load particle -> draw -> recalc loop for every particle
+  - [ ] clear last position of particle before painting new (erase between load and draw)
+  - [ ] make lifetime work
+  - [ ] if lifetime 0 respawn from origin
+  - [ ] make that work with many particles
+  - [ ] offset of particle spawn time
+  - [ ] diminish particle speed linearly
+  - [ ] diminish particle speed with hermite cubic spline
+  - [ ] make origin move
+  - [ ] make origin move in a bezier curve
+  - [ ] modify color of particle through its lifetime
+  - [ ] header with explanation of what this file does with pseudocode
+  - [ ] review TODOs
+  - [ ] a way to share  .data in main.s and mainqemu.s
+  - [ ] size of particles
+  - [ ] modify size of particles during lifetime
+  - [ ]
+*/
+
 .globl app
 app:
 mov x29, x0 // TODO: Backup of framebuffer base address
 
 mov sp, #0x8000
-ldr x9, dirBase // Sets dirbase thing
+ldr x9, QEMU_BASE_ADDRESS // Sets QEMU_BASE_ADDRESS thing
 add x9, sp, x9
 mov sp, x9
 //---------------- CODE HERE ------------------------------------
 
 
 // Paint background
-/*
+
 mov w10, 0x2105    // GRIS
 mov x2,512         // Y Size
 loop1:
@@ -22,7 +57,7 @@ loop0:
   cbnz x1,loop0	   // If not end row jump
   sub x2,x2,1	   // Decrement Y counter
   cbnz x2,loop1	   // if not last row, jump
-*/
+
 
 /*
 
@@ -39,24 +74,41 @@ paint x,y,r,g,b
   - x0: Last painted pixel memory address
   - x1: Last painted pixel column
   - x2: Last painted pixel row
-  - x8: Base address of selected particle
-  - x9: Argument X of draw_pixel
-  - x10: Argument Y of draw_pixel
-  - x11: Argument COLOR of draw_pixel
+  - x3: loadedParticle base address
+
+  - x19: loadedParticle.posX
+  - x20: loadedParticle.posY
+  - x21: loadedParticle.dirX
+  - x22: loadedParticle.dirY
+  - x23: loadedParticle.tempDirX
+  - x24: loadedParticle.tempDirY
+  - x25: loadedParticle.color
+  - x26: loadedParticle.lifetime
+
   - x29: Backup of memory address of pixel (0,0)
 */
 
-mov x0, x29 // Reset x0
 
-mov x1, 0 // Current screen column x
-mov x2, 0 // Current screen row y
+// Reset registers
+mov x0, x29
+mov x1, 0
+mov x2, 0
+mov x19, 0
+mov x20, 0
+mov x25, 0
+mov x23, 0
+mov x24, 0
+mov x3, 0
 
 
 bl load_particle
 update:
   bl draw_pixel
-  add x9, x9, 1
-  add x10, x10, 1
+
+  bl recalc_x
+  bl recalc_y
+
+  bl store_particle
 
   bl delay
   b update
@@ -65,33 +117,118 @@ update:
 b InfLoop
 
 load_particle:
-  // Point x8 to particle1
-  ldr x8, =particle1
-  ldr x7, dirBase // Sets dirbase thing
-  add x8, x8, x7
+  // Point x3 to PARTICLE1
+  ldr x3, =PARTICLE1
+  ldr x9, QEMU_BASE_ADDRESS
+  add x3, x3, x9
 
-  ldr x9, [x8, #0] // x
-  ldr x10, [x8, #8] // y
-  ldr x11, [x8, #32] // color
+  ldr x19, [x3, #0] // posX
+  ldr x20, [x3, #8] // posY
+  ldr x21, [x3, #16] // dirX
+  ldr x22, [x3, #24] // dirY
+  ldr x23, [x3, #32] // tempDirX
+  ldr x24, [x3, #40] // tempDirY
+  ldr x25, [x3, #48] // color
+  ldr x26, [x3, #56] // lifetime
+
   ret
 
-draw_pixel:
-  // Draws the x9, x10 pixel of x11 color
-  mov x0, x29 // Reset x0
-  sub x12, x9, x1 // offset_x
-  sub x13, x10, x2 // offset_y
+store_particle:
+  // Point x3 to PARTICLE1
+  ldr x3, =PARTICLE1
+  ldr x9, QEMU_BASE_ADDRESS
+  add x3, x3, x9
 
-  add x0, x0, x12, LSL 1 // x + offset_x * 2
-  add x0, x0, x13, LSL 10 // y + offset_y * 512
-  strh w11, [x0]
+  str x19, [x3, #0] // posX
+  str x20, [x3, #8] // posY
+  str x21, [x3, #16] // dirX
+  str x22, [x3, #24] // dirY
+  str x23, [x3, #32] // tempDirX
+  str x24, [x3, #40] // tempDirY
+  str x25, [x3, #48] // color
+  str x26, [x3, #56] // lifetime
+
+  ret
+
+
+draw_pixel:
+  // Draws the x19, x20 pixel of x25 color
+  mov x0, x29 // Reset x0
+  add x0, x0, x19, LSL 1 // base + x * 2
+  add x0, x0, x20, LSL 10 // (base + x * 2) + y * 512
+  strh w25, [x0]
   ret
 
 delay:
-  ldr x12, updateDT
+  ldr x12, UPDATE_DELTA
   delay_loop:
     sub x12, x12, 1
     cbnz x12, delay_loop
+  ret
+
+recalc_x:
+  /*
+    while (|dirTempX| < 100) {
+      dirTemp -= sign(dirTempX) * 100
+      draw_pixel_at_x += sign(dirTempX)
+    }
+  */
+  x_recalc_while:
+    mov x9, x23
+
+    stp x30, xzr, [sp, #-16]!
+    bl abs // x9 = |x23|
+    ldp x30, xzr, [sp],16
+
+    cmp x9, 100
+    b.LT x_recalc_while_done
+      cmp x23, xzr // x23 >= 0?
+      b.LT x_recalc_if_false
+        sub x23, x23, 100
+        add x19, x19, 1
+        b x_recalc_if_done
+      x_recalc_if_false:
+        add x23, x23, 100
+        sub x19, x19, 1
+      x_recalc_if_done:
+      b x_recalc_while
+    x_recalc_while_done:
+
+    add x23, x23, x21 // Add dirX to dirTempX
     ret
+
+recalc_y:
+  /* See recalc_x is the same but for Y */
+  y_recalc_while:
+    mov x9, x24
+
+    stp x30, xzr, [sp, #-16]!
+    bl abs // x9 = |x24|
+    ldp x30, xzr, [sp],16
+
+    cmp x9, 100
+    b.LT y_recalc_while_done
+      cmp x24, xzr // x24 >= 0?
+      b.LT y_recalc_if_false
+        sub x24, x24, 100
+        add x20, x20, 1
+        b y_recalc_if_done
+      y_recalc_if_false:
+        add x24, x24, 100
+        sub x20, x20, 1
+      y_recalc_if_done:
+      b y_recalc_while
+  y_recalc_while_done:
+
+  add x24, x24, x22 // Add dirY to dirTempY
+  ret
+
+abs:
+  // x9 = |x9|
+  cmp x9, xzr
+  b.GE abs_ret
+  sub x9, xzr, x9
+  abs_ret: ret
 
 //---------------------------------------------------------------
 
