@@ -16,11 +16,12 @@ update: for every particle: load_particle -> draw -> recalc -> store -> delay
   - [x] movement temp should be part of particle memory
   - [x] load particle -> draw -> recalc loop for every particle
   - [x] clear last position of particle before painting new (erase between load and draw)
-  - [ ] deberia hacer modulo 512 a los argumentos del draw pixel
-  - [ ] make lifetime work
-  - [ ] if lifetime 0 respawn from origin
-  - [ ] make that work with many particles
+  - [x] if lifetime 0 respawn from origin
+  - [x] make that work with many particles
+  - [~] make lifetime work
+      - it's not individual
   - [ ] offset of particle spawn time
+  - [ ] deberia? hacer modulo 512 a los argumentos del draw pixel
   - [ ] diminish particle speed linearly
   - [ ] diminish particle speed with hermite cubic spline
   - [ ] make origin move
