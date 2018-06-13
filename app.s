@@ -1,5 +1,26 @@
 /*
-Debería emitir cuadrados en vez de cruces borrandose mal, (con cruces)
+  Sistema de partículas. Genera algo similar a fuegos artificiales con figuras geométricas.
+*/
+
+/*
+  Pseudocode of the script structure
+
+  paint background
+
+  update_loop:
+    for every particle: load(), clean(), recalculate(), draw(), storage()
+    delay()
+
+  load:
+    load paticle properties to registers x19-x28 from memory
+  clean:
+    draw the particle in the same place but with the BACKGROUND_COLOR
+  recalculate:
+    set x19-x28 to the new values (updates position, radius, lifetime, etc)
+  draw:
+    draws the particle on screen
+  storage:
+    save registers x19-x28 to memory
 
 */
 
@@ -13,32 +34,30 @@ Debería emitir cuadrados en vez de cruces borrandose mal, (con cruces)
   - [x] if lifetime 0 respawn from origin
   - [x] make that work with many particles
   - [~] shape of particles
-      - [x] cross
+      - [x] cross/diamond
       - [x] square
-      - [ ] diamond
       - [ ] circle
   - [ ] change spawn point
-  - [ ] alternate rotation of vectors every loop
+  - [x] alternate rotation of vectors every loop
   - [x] size of particles
   - [x] modify size of particles during lifetime
-  - [~] make lifetime work
-      - it's not individual
-  - [ ] offset of particle spawn time
+  - [x] make lifetime work
+  - [x] offset of particle spawn time
   - [ ] deberia? hacer modulo 512 a los argumentos del draw pixel
   - [ ] diminish particle speed linearly
   - [ ] diminish particle speed with hermite cubic spline
   - [ ] make origin move
   - [ ] make origin move in a bezier curve
   - [ ] modify color of particle through its lifetime
-  - [ ] header with explanation of what this file does with pseudocode
-  - [ ] review TODOs
+  - [x] header with explanation of what this file does with pseudocode
+  - [x] review TODOs
   - [ ] a way to share  .data in main.s and mainqemu.s
-  - [ ] random
+  - [ ] randomize things
 */
 
 .globl app
 app:
-mov x29, x0 // TODO: Backup of framebuffer base address
+mov x29, x0
 
 mov sp, #0x8000
 ldr x9, QEMU_BASE_ADDRESS // Sets QEMU_BASE_ADDRESS thing
@@ -61,18 +80,6 @@ loop0:
   cbnz x1,loop0	   // If not end row jump
   sub x2,x2,1	   // Decrement Y counter
   cbnz x2,loop1	   // if not last row, jump
-
-
-/*
-
-TODO: Pseudocode here
-
-origin = [x, y]
-particle = [x, y, r, g, b speedx, speedy, life]
-
-paint x,y,r,g,b
-
-*/
 
 /* List of used registers
   - x0: Last painted pixel memory address
