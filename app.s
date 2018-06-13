@@ -122,7 +122,7 @@ update:
 
     bl load_particle
 
-    bl clear_cross
+    bl clear_square
 
     bl recalc_x
     bl recalc_y
@@ -217,6 +217,14 @@ draw_cross:
   sub x20, x20, 1 // back to center
 
   ldp x30, xzr, [sp],16 // restore ret address
+  ret
+
+clear_square:
+  // Invokes draw_cross with BACKGROUND_COLOR color
+  stp x30, x25, [sp, #-16]!
+  ldr x25, BACKGROUND_COLOR
+  bl draw_square
+  ldp x30, x25, [sp],16
   ret
 
 draw_square:
