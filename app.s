@@ -355,6 +355,9 @@ recalc_lifetime:
     ldr x19, ORIGIN_X
     ldr x20, ORIGIN_Y
     ldr x26, PARTICLE_LIFETIME
+    stp x30, xzr, [sp, #-16]!
+    bl swap_dirs
+    ldp x30, xzr, [sp],16
   recalc_lifetime_else:
     sub x26, x26, 1
   recalc_lifetime_return: ret
@@ -374,6 +377,10 @@ recalc_radius:
   mov x27, x26, LSR 3
   recalc_radius_return: ret
 
+swap_dirs:
+  mov x9, x21
+  mov x21, x22
+  mov x22, x9
 
 abs:
   // x9 = |x9|

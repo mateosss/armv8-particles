@@ -19,9 +19,9 @@
 		*/
 	  // particlex: .dword posX, posY, dirX, dirY, tempDirX, tempDirY, color, lifetime, radius, initialRadius
 	  //									 0     8     16    24    32        40        48     56				64			72
-	  PARTICLE1: .dword 128, 128, -50, 100, 0, 0, 0x07FF, 1, 3, 3
-	  PARTICLE2: .dword 128, 128, 50, 100, 0, 0, 0xF81F, 2, 3, 3
-	  PARTICLE3: .dword 128, 128, 400, 200, 0, 0, 0xFFE0, 3, 3, 3
+		PARTICLE1: .dword 128, 128, -64, 128, 0, 0, 0x07FF, 1, 3, 3
+		PARTICLE2: .dword 128, 128, 64, 128, 0, 0, 0xF81F, 2, 3, 3
+		PARTICLE3: .dword 128, 128, 384, 172, 0, 0, 0xFFE0, 3, 3, 3
 		PARTICLE4: .dword 128, 128, -31, 142, 0, 0, 0x520E, 4, 3, 3
 		PARTICLE5: .dword 128, 128, 194, 351, 0, 0, 0x25FD, 5, 7, 7
 		PARTICLE6: .dword 128, 128, -259, -46, 0, 0, 0x20D9, 1, 6, 6
