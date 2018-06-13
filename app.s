@@ -1,5 +1,5 @@
 /*
-Debería emitir cruces en vez de píxeles y limpiarlas correctamente
+Debería emitir cuadrados en vez de cruces borrandose mal, (con cruces)
 
 */
 
@@ -14,7 +14,7 @@ Debería emitir cruces en vez de píxeles y limpiarlas correctamente
   - [x] make that work with many particles
   - [~] shape of particles
       - [x] cross
-      - [ ] square
+      - [~] square
       - [ ] diamond
       - [ ] circle
   - [ ] size of particles
@@ -128,7 +128,7 @@ update:
     bl recalc_y
     bl recalc_lifetime
 
-    bl draw_cross
+    bl draw_square
 
     bl store_particle
 
@@ -216,6 +216,49 @@ draw_cross:
   bl draw_pixel // bottom
   sub x20, x20, 1 // back to center
 
+  ldp x30, xzr, [sp],16 // restore ret address
+  ret
+
+draw_square:
+  // Draws a square with center in the (x19, x20) pixel of x25 color, of x27 radius (2*x27+1 side)
+  mov x27, 5 /* TODO: Hardcoded radius, square of 11x11 px */
+
+  // backup variables
+  stp x30, xzr, [sp, #-16]! // stores ret address in stack
+  mov x9, x19 // Save original x19, x20
+  mov x10, x20
+
+  // Set draw_pixel arguments to top left corner of square
+  sub x19, x19, x27
+  sub x20, x20, x27
+
+  // Set x11, x12; height and width, to 1 + 2*radius
+  mov x13, 1
+  add x13, x13, x27, LSL 1 // SIDE of the square
+
+  mov x11, x13 // x11 = height of square
+  mov x12, x13 // x12 = width of square
+
+  // Draw square
+  draw_square_for_height:
+    cbz x11, draw_square_for_height_done // for x11 in height
+    draw_square_for_width:
+      cbz x12, draw_square_for_width_done // for x12 in width
+        bl draw_pixel
+        add x19, x19, 1
+        sub x12, x12, 1
+        b draw_square_for_width
+      draw_square_for_width_done:
+      add x20, x20, 1
+      sub x11, x11, 1
+      mov x12, x13 // reset x12
+      sub x19, x9, x27
+      b draw_square_for_height
+  draw_square_for_height_done:
+
+  // restoration
+  mov x19, x9
+  mov x20, x10
   ldp x30, xzr, [sp],16 // restore ret address
   ret
 
