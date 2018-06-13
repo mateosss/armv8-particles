@@ -14,11 +14,13 @@ Debería emitir cuadrados en vez de cruces borrandose mal, (con cruces)
   - [x] make that work with many particles
   - [~] shape of particles
       - [x] cross
-      - [~] square
+      - [x] square
       - [ ] diamond
       - [ ] circle
-  - [ ] size of particles
-  - [ ] modify size of particles during lifetime
+  - [ ] change spawn point
+  - [ ] alternate rotation of vectors every loop
+  - [x] size of particles
+  - [x] modify size of particles during lifetime
   - [~] make lifetime work
       - it's not individual
   - [ ] offset of particle spawn time
@@ -31,7 +33,7 @@ Debería emitir cuadrados en vez de cruces borrandose mal, (con cruces)
   - [ ] header with explanation of what this file does with pseudocode
   - [ ] review TODOs
   - [ ] a way to share  .data in main.s and mainqemu.s
-  - [ ]
+  - [ ] random
 */
 
 .globl app
@@ -91,6 +93,7 @@ paint x,y,r,g,b
   - x25: loadedParticle.color
   - x26: loadedParticle.lifetime
   - x27: loadedParticle.radius
+  - x28: loadedParticle.initialRadius
 
   - x29: Backup of memory address of pixel (0,0)
 */
@@ -128,6 +131,7 @@ update:
     bl recalc_x
     bl recalc_y
     bl recalc_lifetime
+    bl recalc_radius
 
     bl draw_square
 
@@ -143,7 +147,7 @@ update:
 b InfLoop
 
 load_particle:
-  // Point x3 to PARTICLE1, and save all properties of the property to x19-x27
+  // Point x3 to PARTICLE1, and save all properties of the property to x19-x28
   // Expects particle number at x6 and PARTICLE_SIZE at x8
   ldr x3, =PARTICLES
   mul x9, x6, x8 // x9 = particle_index * PARTICLE_SIZE
@@ -160,11 +164,12 @@ load_particle:
   ldr x25, [x3, #48] // color
   ldr x26, [x3, #56] // lifetime
   ldr x27, [x3, #64] // radius
+  ldr x28, [x3, #72] // initialRadius
 
   ret
 
 store_particle:
-  // save x19-x27 to the particle in memory
+  // save x19-x28 to the particle in memory
   // Expects particle number at x6 and PARTICLE_SIZE at x8
 
   str x19, [x3, #0] // posX
@@ -176,6 +181,7 @@ store_particle:
   str x25, [x3, #48] // color
   str x26, [x3, #56] // lifetime
   str x27, [x3, #64] // radius
+  str x28, [x3, #72] // initialRadius
 
   ret
 
@@ -353,6 +359,22 @@ recalc_lifetime:
   recalc_lifetime_else:
     sub x26, x26, 1
   recalc_lifetime_return: ret
+
+recalc_radius:
+  ldr x10, PARTICLE_LIFETIME
+  cmp x27, x10 // if (radius == 0) radius = initialRadius
+  b.NE recalc_radius_set
+  mov x27, x28
+  ret
+
+  // if (lifetime < radius * ratio) radius = lifetime
+  LSL x9, x27, 3 // ratio
+  recalc_radius_set:
+  cmp x26, x9
+  b.GT recalc_radius_return
+  mov x27, x26, LSR 3
+  recalc_radius_return: ret
+
 
 abs:
   // x9 = |x9|
