@@ -90,6 +90,7 @@ paint x,y,r,g,b
   - x24: loadedParticle.tempDirY
   - x25: loadedParticle.color
   - x26: loadedParticle.lifetime
+  - x27: loadedParticle.radius
 
   - x29: Backup of memory address of pixel (0,0)
 */
@@ -142,7 +143,7 @@ update:
 b InfLoop
 
 load_particle:
-  // Point x3 to PARTICLE1, and save all properties of the property to x19-x26
+  // Point x3 to PARTICLE1, and save all properties of the property to x19-x27
   // Expects particle number at x6 and PARTICLE_SIZE at x8
   ldr x3, =PARTICLES
   mul x9, x6, x8 // x9 = particle_index * PARTICLE_SIZE
@@ -158,11 +159,12 @@ load_particle:
   ldr x24, [x3, #40] // tempDirY
   ldr x25, [x3, #48] // color
   ldr x26, [x3, #56] // lifetime
+  ldr x27, [x3, #64] // radius
 
   ret
 
 store_particle:
-  // save x19-x26 to the particle in memory
+  // save x19-x27 to the particle in memory
   // Expects particle number at x6 and PARTICLE_SIZE at x8
 
   str x19, [x3, #0] // posX
@@ -173,6 +175,7 @@ store_particle:
   str x24, [x3, #40] // tempDirY
   str x25, [x3, #48] // color
   str x26, [x3, #56] // lifetime
+  str x27, [x3, #64] // radius
 
   ret
 
@@ -229,7 +232,6 @@ clear_square:
 
 draw_square:
   // Draws a square with center in the (x19, x20) pixel of x25 color, of x27 radius (2*x27+1 side)
-  mov x27, 5 /* TODO: Hardcoded radius, square of 11x11 px */
 
   // backup variables
   stp x30, xzr, [sp, #-16]! // stores ret address in stack
