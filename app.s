@@ -79,7 +79,7 @@ paint x,y,r,g,b
   - x1: Last painted pixel column
   - x2: Last painted pixel row
 
-  - x3: loadedParticle base address
+  - x5: loadedParticle base address
   - x6: current drawn particle index
   - x7: PARTICLES_AMOUNT
   - x8: PARTICLE_SIZE
@@ -104,8 +104,7 @@ start:
 mov x0, x29
 mov x1, 0
 mov x2, 0
-mov x3, 0
-mov x4, 0
+mov x5, 0
 mov x6, 0
 ldr x7, PARTICLES_AMOUNT
 ldr x8, PARTICLE_SIZE
@@ -147,24 +146,24 @@ update:
 b InfLoop
 
 load_particle:
-  // Point x3 to PARTICLE1, and save all properties of the property to x19-x28
+  // Point x5 to PARTICLE1, and save all properties of the property to x19-x28
   // Expects particle number at x6 and PARTICLE_SIZE at x8
-  ldr x3, =PARTICLES
+  ldr x5, =PARTICLES
   mul x9, x6, x8 // x9 = particle_index * PARTICLE_SIZE
-  add x3, x3, x9, LSL 3 // point x3 to current particle
+  add x5, x5, x9, LSL 3 // point x5 to current particle
   ldr x9, QEMU_BASE_ADDRESS
-  add x3, x3, x9
+  add x5, x5, x9
 
-  ldr x19, [x3, #0] // posX
-  ldr x20, [x3, #8] // posY
-  ldr x21, [x3, #16] // dirX
-  ldr x22, [x3, #24] // dirY
-  ldr x23, [x3, #32] // tempDirX
-  ldr x24, [x3, #40] // tempDirY
-  ldr x25, [x3, #48] // color
-  ldr x26, [x3, #56] // lifetime
-  ldr x27, [x3, #64] // radius
-  ldr x28, [x3, #72] // initialRadius
+  ldr x19, [x5, #0] // posX
+  ldr x20, [x5, #8] // posY
+  ldr x21, [x5, #16] // dirX
+  ldr x22, [x5, #24] // dirY
+  ldr x23, [x5, #32] // tempDirX
+  ldr x24, [x5, #40] // tempDirY
+  ldr x25, [x5, #48] // color
+  ldr x26, [x5, #56] // lifetime
+  ldr x27, [x5, #64] // radius
+  ldr x28, [x5, #72] // initialRadius
 
   ret
 
@@ -172,16 +171,16 @@ store_particle:
   // save x19-x28 to the particle in memory
   // Expects particle number at x6 and PARTICLE_SIZE at x8
 
-  str x19, [x3, #0] // posX
-  str x20, [x3, #8] // posY
-  str x21, [x3, #16] // dirX
-  str x22, [x3, #24] // dirY
-  str x23, [x3, #32] // tempDirX
-  str x24, [x3, #40] // tempDirY
-  str x25, [x3, #48] // color
-  str x26, [x3, #56] // lifetime
-  str x27, [x3, #64] // radius
-  str x28, [x3, #72] // initialRadius
+  str x19, [x5, #0] // posX
+  str x20, [x5, #8] // posY
+  str x21, [x5, #16] // dirX
+  str x22, [x5, #24] // dirY
+  str x23, [x5, #32] // tempDirX
+  str x24, [x5, #40] // tempDirY
+  str x25, [x5, #48] // color
+  str x26, [x5, #56] // lifetime
+  str x27, [x5, #64] // radius
+  str x28, [x5, #72] // initialRadius
 
   ret
 
