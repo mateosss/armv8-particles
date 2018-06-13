@@ -1,5 +1,5 @@
 /*
-Debería emitir cruces en vez de píxeles, pero las limpia mal (solo el centro)
+Debería emitir cruces en vez de píxeles y limpiarlas correctamente
 
 */
 
@@ -122,7 +122,7 @@ update:
 
     bl load_particle
 
-    bl clear_pixel
+    bl clear_cross
 
     bl recalc_x
     bl recalc_y
@@ -190,6 +190,14 @@ draw_pixel:
   add x0, x0, x19, LSL 1 // base + x * 2
   add x0, x0, x20, LSL 10 // (base + x * 2) + y * 512
   strh w25, [x0]
+  ret
+
+clear_cross:
+  // Invokes draw_cross with BACKGROUND_COLOR color
+  stp x30, x25, [sp, #-16]!
+  ldr x25, BACKGROUND_COLOR
+  bl draw_cross
+  ldp x30, x25, [sp],16
   ret
 
 draw_cross:
