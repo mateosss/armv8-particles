@@ -1,11 +1,5 @@
 /*
-Deberia hacer lo mismo que antes (old3)
-
-Added store_particle
-saque la actualizacion de los dirTemps de delay y los pase al loop,
-entonces ahora cuando loopee sobre varias particulas, funcionaria sobre todas
-
-update: for every particle: load_particle -> draw -> recalc -> store -> delay
+Debería emitir cruces en vez de píxeles, pero las limpia mal (solo el centro)
 
 */
 
@@ -18,6 +12,13 @@ update: for every particle: load_particle -> draw -> recalc -> store -> delay
   - [x] clear last position of particle before painting new (erase between load and draw)
   - [x] if lifetime 0 respawn from origin
   - [x] make that work with many particles
+  - [~] shape of particles
+      - [x] cross
+      - [ ] square
+      - [ ] diamond
+      - [ ] circle
+  - [ ] size of particles
+  - [ ] modify size of particles during lifetime
   - [~] make lifetime work
       - it's not individual
   - [ ] offset of particle spawn time
@@ -30,8 +31,6 @@ update: for every particle: load_particle -> draw -> recalc -> store -> delay
   - [ ] header with explanation of what this file does with pseudocode
   - [ ] review TODOs
   - [ ] a way to share  .data in main.s and mainqemu.s
-  - [ ] size of particles
-  - [ ] modify size of particles during lifetime
   - [ ]
 */
 
@@ -129,7 +128,7 @@ update:
     bl recalc_y
     bl recalc_lifetime
 
-    bl draw_pixel
+    bl draw_cross
 
     bl store_particle
 
@@ -191,6 +190,25 @@ draw_pixel:
   add x0, x0, x19, LSL 1 // base + x * 2
   add x0, x0, x20, LSL 10 // (base + x * 2) + y * 512
   strh w25, [x0]
+  ret
+
+draw_cross:
+  // Draws a cross with center in the (x19, x20) pixel of x25 color
+  stp x30, xzr, [sp, #-16]! // stores ret address in stack
+
+  bl draw_pixel // center
+  sub x19, x19, 1
+  bl draw_pixel // left
+  add x19, x19, 2
+  bl draw_pixel // right
+  sub x19, x19, 1
+  sub x20, x20, 1
+  bl draw_pixel // top
+  add x20, x20, 2
+  bl draw_pixel // bottom
+  sub x20, x20, 1 // back to center
+
+  ldp x30, xzr, [sp],16 // restore ret address
   ret
 
 delay:
