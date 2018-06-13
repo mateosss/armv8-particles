@@ -19,36 +19,36 @@ PARTICLES:
   */
   // particlex: .dword posX, posY, dirX, dirY, tempDirX, tempDirY, color, lifetime, radius, initialRadius
   //									 0     8     16    24    32        40        48     56				64			72
-  PARTICLE1: .dword 128, 128, -50, 100, 0, 0, 0x07FF, 1, 2, 2
-  PARTICLE2: .dword 128, 128, 50, 100, 0, 0, 0xF81F, 2, 2, 2
-  PARTICLE3: .dword 128, 128, 400, 1, 0, 0, 0xFFE0, 3, 2, 2
-  PARTICLE4: .dword 128, 128, -31, 142, 0, 0, 0x520E, 4, 2, 2
+  PARTICLE1: .dword 128, 128, -50, 100, 0, 0, 0x07FF, 1, 3, 3
+  PARTICLE2: .dword 128, 128, 50, 100, 0, 0, 0xF81F, 2, 3, 3
+  PARTICLE3: .dword 128, 128, 400, 200, 0, 0, 0xFFE0, 3, 3, 3
+  PARTICLE4: .dword 128, 128, -31, 142, 0, 0, 0x520E, 4, 3, 3
   PARTICLE5: .dword 128, 128, 194, 351, 0, 0, 0x25FD, 5, 7, 7
-  PARTICLE6: .dword 128, 128, -259, -46, 0, 0, 0x20D9, 6, 6, 6
-  PARTICLE7: .dword 128, 128, 103, -293, 0, 0, 0x30B0, 7, 5, 5
-  PARTICLE8: .dword 128, 128, -381, -204, 0, 0, 0xC1D9, 8, 7, 7
-  PARTICLE9: .dword 128, 128, -317, 11, 0, 0, 0x8751, 9, 6, 6
-  PARTICLE10: .dword 128, 128, -212, -309, 0, 0, 0x1A80, 10, 7, 7
-  PARTICLE11: .dword 128, 128, -262, 240, 0, 0, 0xE388, 11, 5, 5
-  PARTICLE12: .dword 128, 128, 16, -11, 0, 0, 0x7278, 12, 2, 2
-  PARTICLE13: .dword 128, 128, 160, 53, 0, 0, 0x6B6A, 13, 4, 4
-  PARTICLE14: .dword 128, 128, 63, 44, 0, 0, 0xE126, 14, 3, 3
-  PARTICLE15: .dword 128, 128, 177, -305, 0, 0, 0x1D1C, 15, 4, 4
-  PARTICLE16: .dword 384, 384, -167, -350, 0, 0, 0x59FC, 16, 7, 7
-  PARTICLE17: .dword 384, 384, 166, 242, 0, 0, 0xEA93, 17, 7, 7
-  PARTICLE18: .dword 384, 384, 315, 74, 0, 0, 0xF608, 18, 7, 7
-  PARTICLE19: .dword 384, 384, 297, 366, 0, 0, 0x749C, 19, 5, 5
-  PARTICLE20: .dword 384, 384, -252, 343, 0, 0, 0x2597, 20, 4, 4
-  PARTICLE21: .dword 384, 384, -214, 204, 0, 0, 0xC5FB, 21, 6, 6
-  PARTICLE22: .dword 384, 384, 212, -175, 0, 0, 0x3428, 22, 5, 5
-  PARTICLE23: .dword 384, 384, 349, -103, 0, 0, 0xA8C6, 23, 3, 3
-  PARTICLE24: .dword 384, 384, -312, 16, 0, 0, 0xC77B, 24, 3, 3
-  PARTICLE25: .dword 384, 384, -280, 38, 0, 0, 0x4E61, 25, 6, 6
-  PARTICLE26: .dword 384, 384, 143, 135, 0, 0, 0xEB4C, 26, 4, 4
-  PARTICLE27: .dword 384, 384, -262, -132, 0, 0, 0xC07B, 27, 6, 6
-  PARTICLE28: .dword 384, 384, -1, 202, 0, 0, 0x31DE, 28, 2, 2
-  PARTICLE29: .dword 384, 384, 321, -121, 0, 0, 0xC2D3, 29, 6, 6
-  PARTICLE30: .dword 384, 384, -263, 227, 0, 0, 0xAFEC, 30, 2, 2
+  PARTICLE6: .dword 128, 128, -259, -46, 0, 0, 0x20D9, 1, 6, 6
+  PARTICLE7: .dword 128, 128, 103, -293, 0, 0, 0x30B0, 2, 5, 5
+  PARTICLE8: .dword 128, 128, -381, -204, 0, 0, 0xC1D9, 3, 7, 7
+  PARTICLE9: .dword 128, 128, -317, 11, 0, 0, 0x8751, 4, 6, 6
+  PARTICLE10: .dword 128, 128, -212, -309, 0, 0, 0x1A80, 5, 7, 7
+  PARTICLE11: .dword 128, 128, -262, 240, 0, 0, 0xE388, 1, 5, 5
+  PARTICLE12: .dword 128, 128, 16, -11, 0, 0, 0x7278, 2, 4, 4
+  PARTICLE13: .dword 128, 128, 160, 53, 0, 0, 0x6B6A, 3, 4, 4
+  PARTICLE14: .dword 128, 128, 63, 44, 0, 0, 0xE126, 4, 3, 3
+  PARTICLE15: .dword 128, 128, 177, -305, 0, 0, 0x1D1C, 5, 4, 4
+  PARTICLE16: .dword 384, 384, -167, -350, 0, 0, 0x59FC, 1, 7, 7
+  PARTICLE17: .dword 384, 384, 166, 242, 0, 0, 0xEA93, 2, 7, 7
+  PARTICLE18: .dword 384, 384, 315, 74, 0, 0, 0xF608, 3, 7, 7
+  PARTICLE19: .dword 384, 384, 297, 366, 0, 0, 0x749C, 4, 5, 5
+  PARTICLE20: .dword 384, 384, -252, 343, 0, 0, 0x2597, 5, 4, 4
+  PARTICLE21: .dword 384, 384, -214, 204, 0, 0, 0xC5FB, 1, 6, 6
+  PARTICLE22: .dword 384, 384, 212, -175, 0, 0, 0x3428, 2, 5, 5
+  PARTICLE23: .dword 384, 384, 349, -103, 0, 0, 0xA8C6, 3, 3, 3
+  PARTICLE24: .dword 384, 384, -312, 16, 0, 0, 0xC77B, 4, 3, 3
+  PARTICLE25: .dword 384, 384, -280, 38, 0, 0, 0x4E61, 5, 6, 6
+  PARTICLE26: .dword 384, 384, 143, 135, 0, 0, 0xEB4C, 1, 4, 4
+  PARTICLE27: .dword 384, 384, -262, -132, 0, 0, 0xC07B, 2, 6, 6
+  PARTICLE28: .dword 384, 384, -1, 202, 0, 0, 0x31DE, 3, 4, 4
+  PARTICLE29: .dword 384, 384, 321, -121, 0, 0, 0xC2D3, 4, 6, 6
+  PARTICLE30: .dword 384, 384, -263, 227, 0, 0, 0xAFEC, 5, 3, 3
 
 
 .text
