@@ -133,7 +133,7 @@ mov x25, 0
 mov x26, 0
 mov x27, 0
 mov x28, 0
-mov x29, 0
+mov x29, x29
 
 
 update:
