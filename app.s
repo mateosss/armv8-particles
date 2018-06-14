@@ -392,23 +392,20 @@ recalc_lifetime:
     ldp x30, xzr, [sp],16
     mov x21, x17 // Reset velocity vector (dirX, dirY)
     mov x22, x18
+    mov x27, x28 // Reset radius
   recalc_lifetime_else:
     sub x26, x26, 1
   recalc_lifetime_return: ret
 
 recalc_radius:
-  // Make radius decrease with lifetime
-  ldr x10, PARTICLE_LIFETIME
-  cmp x27, x10 // if (radius == 0) radius = initialRadius; else recalc
-  b.NE recalc_radius_set
-  mov x27, x28
-  ret
+  ldr x9, PARTICLE_LIFETIME // if (just spawned) don't recalc
+  cmp x9, x26
+  b.EQ recalc_radius_return
 
-  // if (lifetime < radius * ratio) radius = lifetime
-  // FIXME: This line is never executed, so x9 is the last value, of recalc_y
-  // which is abs(tempDirY), it works pretty neat nonetheless.*/
-  LSL x9, x27, 3
+
+  // if (lifetime < radius * 8) radius = lifetime / 8
   recalc_radius_set:
+  LSL x9, x27, 3
   cmp x26, x9
   b.GT recalc_radius_return
   mov x27, x26, LSR 3
