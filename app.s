@@ -37,6 +37,7 @@
   - [x] if lifetime 0 respawn from origin
   - [x] make that work with many particles
   - [~] shape of particles
+      - [x] pixels
       - [x] cross/diamond
       - [x] square
       - [ ] circle
@@ -46,15 +47,15 @@
   - [x] modify size of particles during lifetime
   - [x] make lifetime work
   - [x] offset of particle spawn time
-  - [ ] deberia? hacer modulo 512 a los argumentos del draw pixel
-  - [ ] diminish particle speed linearly
+  - [ ] should be done? make mod 512 the arguments of draw_pixel
+  - [x] diminish particle speed linearly
   - [ ] diminish particle speed with hermite cubic spline
   - [ ] make origin move
   - [ ] make origin move in a bezier curve
-  - [ ] modify color of particle through its lifetime
+  - [x] modify color of particle through its lifetime
   - [x] header with explanation of what this file does with pseudocode
   - [x] review TODOs
-  - [ ] a way to share  .data in main.s and mainqemu.s
+  - [ ] a way to share .data in main.s and mainqemu.s
   - [ ] randomize things
 */
 
@@ -72,7 +73,7 @@ mov sp, x9
 // Paint background
 
 ldr x10, BACKGROUND_COLOR
-cbz x10, start
+cbz x10, start // Dont paint if in QEMU
 mov x2,512         // Y Size
 loop1:
   mov x1,512         // X Size
@@ -112,7 +113,7 @@ loop0:
 
 start:
 
-// Reset registers
+// Reset used registers (just in case)
 mov x0, x29
 mov x1, 0
 mov x2, 0
@@ -120,16 +121,24 @@ mov x5, 0
 mov x6, 0
 ldr x7, PARTICLES_AMOUNT
 ldr x8, PARTICLE_SIZE
+mov x17, 0
+mov x18, 0
 mov x19, 0
 mov x20, 0
-mov x25, 0
+mov x21, 0
+mov x22, 0
 mov x23, 0
 mov x24, 0
+mov x25, 0
+mov x26, 0
+mov x27, 0
+mov x28, 0
+mov x29, 0
 
 
 update:
 
-  //for every particle: load -> draw > recalc data -> store
+  //for every particle: load -> clear -> recalc data -> draw -> store
   mov x6, x7 // x6 = PARTICLES_AMOUNT
   update_for:
     cbz x6, update_for_done
@@ -160,7 +169,7 @@ update:
 b InfLoop
 
 load_particle:
-  // Point x5 to PARTICLE1, and save all properties of the property to x17-x28
+  // Point x5 to PARTICLE[x6], and save all properties of the property to x17-x28
   // Expects particle number at x6 and PARTICLE_SIZE at x8
   ldr x5, =PARTICLES
   mul x9, x6, x8 // x9 = particle_index * PARTICLE_SIZE
@@ -366,12 +375,12 @@ recalc_y:
   ret
 
 recalc_velocity:
-  add x21, x21, 20
-  add x22, x22, 10
+  add x21, x21, 20 // Simulate horizontal wind
+  add x22, x22, 10 // Simulate gravity
   ret
 
 recalc_lifetime:
-  /* Substract 1 from lifetime, and if 0 reset, and reset position */
+  /* Substract 1 from lifetime, and if 0 reset, swap_dirs, and reset position */
   // Lifetime update
   cmp x26, 0
   b.GT recalc_lifetime_else
@@ -388,14 +397,17 @@ recalc_lifetime:
   recalc_lifetime_return: ret
 
 recalc_radius:
+  // Make radius decrease with lifetime
   ldr x10, PARTICLE_LIFETIME
-  cmp x27, x10 // if (radius == 0) radius = initialRadius
+  cmp x27, x10 // if (radius == 0) radius = initialRadius; else recalc
   b.NE recalc_radius_set
   mov x27, x28
   ret
 
   // if (lifetime < radius * ratio) radius = lifetime
-  LSL x9, x27, 3 // ratio
+  // FIXME: This line is never executed, so x9 is the last value, of recalc_y
+  // which is abs(tempDirY), it works pretty neat nonetheless.*/
+  LSL x9, x27, 3
   recalc_radius_set:
   cmp x26, x9
   b.GT recalc_radius_return
@@ -403,10 +415,11 @@ recalc_radius:
   recalc_radius_return: ret
 
 recalc_color:
-  sub x25, x25, 0x0841
+  sub x25, x25, 0x0841 // Substract 1 of every color, and abuse underflow
   ret
 
 swap_dirs:
+  // Swap dirX, dirY
   mov x9, x21
   mov x21, x22
   mov x22, x9
