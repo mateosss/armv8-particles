@@ -1,5 +1,8 @@
 /*
-  Sistema de partículas. Genera algo similar a fuegos artificiales con figuras geométricas.
+  Sistema de partículas. "Le brisa otonialé - Mayco Molina"
+
+  Lee de memoria partículas que tienen una velocidad, color, tamaño, etc
+  Y las va mutando, moviendo, acelerando, achicando, durante su vida.
 */
 
 /*
@@ -12,15 +15,15 @@
     delay()
 
   load:
-    load paticle properties to registers x19-x28 from memory
+    load paticle properties to registers x17-x28 from memory
   clean:
     draw the particle in the same place but with the BACKGROUND_COLOR
   recalculate:
-    set x19-x28 to the new values (updates position, radius, lifetime, etc)
+    set x17-x28 to the new values (updates position, radius, lifetime, etc)
   draw:
     draws the particle on screen
   storage:
-    save registers x19-x28 to memory
+    save registers x17-x28 to memory
 
 */
 
@@ -91,6 +94,8 @@ loop0:
   - x7: PARTICLES_AMOUNT
   - x8: PARTICLE_SIZE
 
+  - x17: loadedParticle.initialDirX
+  - x18: loadedParticle.initialDirY
   - x19: loadedParticle.posX
   - x20: loadedParticle.posY
   - x21: loadedParticle.dirX
@@ -134,10 +139,12 @@ update:
 
     bl clear_square
 
+    bl recalc_velocity
     bl recalc_x
     bl recalc_y
     bl recalc_lifetime
     bl recalc_radius
+    bl recalc_color
 
     bl draw_square
 
@@ -153,7 +160,7 @@ update:
 b InfLoop
 
 load_particle:
-  // Point x5 to PARTICLE1, and save all properties of the property to x19-x28
+  // Point x5 to PARTICLE1, and save all properties of the property to x17-x28
   // Expects particle number at x6 and PARTICLE_SIZE at x8
   ldr x5, =PARTICLES
   mul x9, x6, x8 // x9 = particle_index * PARTICLE_SIZE
@@ -161,33 +168,37 @@ load_particle:
   ldr x9, QEMU_BASE_ADDRESS
   add x5, x5, x9
 
-  ldr x19, [x5, #0] // posX
-  ldr x20, [x5, #8] // posY
-  ldr x21, [x5, #16] // dirX
-  ldr x22, [x5, #24] // dirY
-  ldr x23, [x5, #32] // tempDirX
-  ldr x24, [x5, #40] // tempDirY
-  ldr x25, [x5, #48] // color
-  ldr x26, [x5, #56] // lifetime
-  ldr x27, [x5, #64] // radius
-  ldr x28, [x5, #72] // initialRadius
+  ldr x17, [x5, #0] // initialDirX
+  ldr x18, [x5, #8] // initialDirY
+  ldr x19, [x5, #16] // posX
+  ldr x20, [x5, #24] // posY
+  ldr x21, [x5, #32] // dirX
+  ldr x22, [x5, #40] // dirY
+  ldr x23, [x5, #48] // tempDirX
+  ldr x24, [x5, #56] // tempDirY
+  ldr x25, [x5, #64] // color
+  ldr x26, [x5, #72] // lifetime
+  ldr x27, [x5, #80] // radius
+  ldr x28, [x5, #88] // initialRadius
 
   ret
 
 store_particle:
-  // save x19-x28 to the particle in memory
+  // save x17-x28 to the particle in memory
   // Expects particle number at x6 and PARTICLE_SIZE at x8
 
-  str x19, [x5, #0] // posX
-  str x20, [x5, #8] // posY
-  str x21, [x5, #16] // dirX
-  str x22, [x5, #24] // dirY
-  str x23, [x5, #32] // tempDirX
-  str x24, [x5, #40] // tempDirY
-  str x25, [x5, #48] // color
-  str x26, [x5, #56] // lifetime
-  str x27, [x5, #64] // radius
-  str x28, [x5, #72] // initialRadius
+  str x17, [x5, #0] // initialDirX
+  str x18, [x5, #8] // initialDirY
+  str x19, [x5, #16] // posX
+  str x20, [x5, #24] // posY
+  str x21, [x5, #32] // dirX
+  str x22, [x5, #40] // dirY
+  str x23, [x5, #48] // tempDirX
+  str x24, [x5, #56] // tempDirY
+  str x25, [x5, #64] // color
+  str x26, [x5, #72] // lifetime
+  str x27, [x5, #80] // radius
+  str x28, [x5, #88] // initialRadius
 
   ret
 
@@ -354,6 +365,11 @@ recalc_y:
   add x24, x24, x22 // Add dirY to dirTempY
   ret
 
+recalc_velocity:
+  add x21, x21, 20
+  add x22, x22, 10
+  ret
+
 recalc_lifetime:
   /* Substract 1 from lifetime, and if 0 reset, and reset position */
   // Lifetime update
@@ -365,6 +381,8 @@ recalc_lifetime:
     stp x30, xzr, [sp, #-16]!
     bl swap_dirs
     ldp x30, xzr, [sp],16
+    mov x21, x17 // Reset velocity vector (dirX, dirY)
+    mov x22, x18
   recalc_lifetime_else:
     sub x26, x26, 1
   recalc_lifetime_return: ret
@@ -383,6 +401,10 @@ recalc_radius:
   b.GT recalc_radius_return
   mov x27, x26, LSR 3
   recalc_radius_return: ret
+
+recalc_color:
+  sub x25, x25, 0x0841
+  ret
 
 swap_dirs:
   mov x9, x21
