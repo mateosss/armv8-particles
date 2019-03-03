@@ -1,15 +1,11 @@
-# Odc2018 - Lab Rpi3
+# Particle system made in pure armv8
 
-- Configuracion de pantalla: 512x512 pixeles, formato RGB 16 bits.
-- El registro X0 contiene la direccion base del FrameBuffer (Pixel 1)
-- El codigo de cada consigna debe ser escrito en el archivo app.s
-- El archivo main.s contiene la inicializacion del FrameBuffer y la llamada a app.s (NO EDITAR)
-- El codigo de ejemplo pinta toda la pantalla de color ROJO puro.
-- dashboard memory watch 0x40080100 256
+*Made for Computer Organization class*
 
-# Use the stack
-```arm
-str x30, [sp, #-8]! // Save return address in stack
-bl initialize_row
-ldr x30, [sp],8
-```
+[![Click to open in youtube](preview.gif)](https://youtu.be/Tr2CpnYIwZ8)
+
+- The main implementation is located in [`app.s`](app.s)
+- Screen size is 512x512 with 16 bit RGB pixel colors.
+- `X0` register points to the frame buffer base (first pixel)
+- [`main.s`](main.s) contains the frame buffer and particle memory initialization, and branchs to `app.s`
+- Use `dashboard memory watch 0x40080100 256` in a armv8 qemu instance while running to look at the frame buffer
